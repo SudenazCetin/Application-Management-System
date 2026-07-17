@@ -1,0 +1,55 @@
+spring:
+  # Uygulamanin servis adini tanimlar.
+  application:
+    name: application-management-system
+
+  # Devtools restart classloader kaynakli sinif yukleme hatalarini engeller.
+  devtools:
+    restart:
+      enabled: false
+
+  # PostgreSQL baglanti parametreleri icin sablon alanidir.
+  datasource:
+    # PostgreSQL JDBC surucusunu acikca belirtir.
+    driver-class-name: org.postgresql.Driver
+    # Veritabaninin host, port ve db adini iceren baglanti adresidir.
+    url: jdbc:postgresql://localhost:5432/application_management_system
+    # Veritabanina baglanacak kullanici hesabidir.
+    username: postgres
+    # Veritabani kullanicisinin sifresidir.
+    password: postgres123
+
+  # JPA'nin SQL uretimi ve veritabani etkileimini yoneten temel ayarlar.
+  jpa:
+    open-in-view: false
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          time_zone: UTC
+    hibernate:
+      # Bu adimda tablo/sema olusturmamak icin DDL islemlerini kapatir.
+      ddl-auto: update
+
+  # Dosya yukleme islemleri icin maksimum boyut limitleri.
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+# Uygulamanin hangi porttan yayin yapacagini belirler.
+server:
+  port: 8080
+
+# Dosya yukleme klasoru gibi uygulamaya ozel ayarlar bu bolumde toplanir.
+app:
+  upload:
+    # Yuklenen dosyalarin diskte tutulacagi klasordur.
+    dir: uploads
+
+# Hibernate ve JDBC seviyesinde SQL log detayini kontrol eder.
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
