@@ -1,0 +1,20 @@
+# Build outputs
+/target/
+/frontend/dist/
+
+# Dependencies
+/frontend/node_modules/
+
+# Runtime uploads
+/uploads/
+
+# IDE / tooling
+/.idea/
+/.vscode/
+/.metals/
+/.bsp/
+/.settings/
+/.project
+
+# Logs
+*.log
