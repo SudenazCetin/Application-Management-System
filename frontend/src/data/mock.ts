@@ -35,18 +35,22 @@ export const formsMock: ApplicationFormItem[] = [
 export const attachmentsMock: AttachmentItem[] = [
   {
     id: 900,
-    fileName: 'budget-justification.pdf',
+    originalName: 'budget-justification.pdf',
+    storedFileName: '1731592920-budget-justification.pdf',
     filePath: '/uploads/budget-justification.pdf',
     fileType: 'application/pdf',
-    uploadedDate: '2026-07-16T10:10:00',
+    fileSize: 204800,
+    uploadDate: '2026-07-16T10:10:00',
     applicationFormId: 101,
   },
   {
     id: 901,
-    fileName: 'quote-vendor.xlsx',
+    originalName: 'quote-vendor.xlsx',
+    storedFileName: '1731592932-quote-vendor.xlsx',
     filePath: '/uploads/quote-vendor.xlsx',
     fileType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    uploadedDate: '2026-07-16T10:12:00',
+    fileSize: 126976,
+    uploadDate: '2026-07-16T10:12:00',
     applicationFormId: 102,
   },
 ]

@@ -86,33 +86,37 @@ export function AppProvider({ children }: PropsWithChildren) {
         })
       },
       login: async (email: string, password: string) => {
-        const { data } = await api.post<{ success: boolean; message: string; token: string | null }>('/api/auth/login', {
-          email,
-          password,
-        })
+        try {
+          const { data } = await api.post<{ success: boolean; message: string; token: string | null }>('/api/auth/login', {
+            email,
+            password,
+          })
 
-        if (!data.success || !data.token) {
-          throw new Error(data.message || 'Login failed')
+          if (!data.success || !data.token) {
+            throw new Error(data.message || 'Login failed')
+          }
+
+          const decoded = decodeToken(data.token)
+
+          if (!decoded) {
+            throw new Error('Token could not be parsed')
+          }
+
+          localStorage.setItem(TOKEN_KEY, data.token)
+
+          const role = await inferRoleFromBackend()
+
+          const nextUser: AuthUser = {
+            email: decoded.email || email,
+            role,
+            token: data.token,
+          }
+
+          setUser(nextUser)
+          toast.success('Giris basarili')
+        } catch (error) {
+          throw new Error(getErrorMessage(error, 'Login failed'))
         }
-
-        const decoded = decodeToken(data.token)
-
-        if (!decoded) {
-          throw new Error('Token could not be parsed')
-        }
-
-        localStorage.setItem(TOKEN_KEY, data.token)
-
-        const role = await inferRoleFromBackend()
-
-        const nextUser: AuthUser = {
-          email: decoded.email || email,
-          role,
-          token: data.token,
-        }
-
-        setUser(nextUser)
-        toast.success('Giris basarili')
       },
       register: async (payload: {
         name: string

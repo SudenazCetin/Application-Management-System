@@ -39,10 +39,12 @@ export interface ApplicationFormItem {
 
 export interface AttachmentItem {
   id: number
-  fileName: string
+  originalName: string
+  storedFileName: string
   filePath: string
   fileType: string
-  uploadedDate: string
+  fileSize: number
+  uploadDate: string
   applicationFormId: number
 }
 

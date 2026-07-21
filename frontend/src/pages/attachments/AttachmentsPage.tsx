@@ -33,9 +33,11 @@ export function AttachmentsPage() {
   const [editingItem, setEditingItem] = useState<AttachmentItem | null>(null)
   const [selectedItem, setSelectedItem] = useState<AttachmentItem | null>(null)
   const [selectedFileName, setSelectedFileName] = useState('No file selected')
+  const [storedFileName, setStoredFileName] = useState('')
   const [filePath, setFilePath] = useState('')
   const [fileType, setFileType] = useState('')
-  const [uploadedDate, setUploadedDate] = useState(new Date().toISOString().slice(0, 16))
+  const [fileSize, setFileSize] = useState('')
+  const [uploadDate, setUploadDate] = useState(new Date().toISOString().slice(0, 16))
   const [applicationFormId, setApplicationFormId] = useState('')
 
   async function loadAttachments() {
@@ -59,19 +61,23 @@ export function AttachmentsPage() {
   function openCreateModal() {
     setEditingItem(null)
     setSelectedFileName('No file selected')
+    setStoredFileName('')
     setFilePath('')
     setFileType('')
-    setUploadedDate(new Date().toISOString().slice(0, 16))
+    setFileSize('')
+    setUploadDate(new Date().toISOString().slice(0, 16))
     setApplicationFormId('')
     setOpenModal(true)
   }
 
   function openEditModal(item: AttachmentItem) {
     setEditingItem(item)
-    setSelectedFileName(item.fileName)
+    setSelectedFileName(item.originalName)
+    setStoredFileName(item.storedFileName)
     setFilePath(item.filePath)
     setFileType(item.fileType)
-    setUploadedDate(item.uploadedDate.slice(0, 16))
+    setFileSize(String(item.fileSize))
+    setUploadDate(item.uploadDate.slice(0, 16))
     setApplicationFormId(String(item.applicationFormId))
     setOpenModal(true)
   }
@@ -80,10 +86,12 @@ export function AttachmentsPage() {
     event.preventDefault()
 
     const payload: AttachmentPayload = {
-      fileName: selectedFileName,
+      originalName: selectedFileName,
+      storedFileName: storedFileName || `${Date.now()}-${selectedFileName}`,
       filePath,
       fileType,
-      uploadedDate: new Date(uploadedDate).toISOString(),
+      fileSize: Number(fileSize),
+      uploadDate: new Date(uploadDate).toISOString(),
       applicationFormId: Number(applicationFormId),
     }
 
@@ -127,12 +135,18 @@ export function AttachmentsPage() {
   }, [items, page])
 
   const columns = [
-    { key: 'name', header: 'File Name', render: (item: AttachmentItem) => item.fileName },
+    { key: 'name', header: 'Original Name', render: (item: AttachmentItem) => item.originalName },
+    { key: 'storedFileName', header: 'Stored Name', render: (item: AttachmentItem) => item.storedFileName },
     { key: 'type', header: 'Type', render: (item: AttachmentItem) => item.fileType },
     {
-      key: 'uploadedDate',
+      key: 'fileSize',
+      header: 'Size',
+      render: (item: AttachmentItem) => `${Math.round(item.fileSize / 1024)} KB`,
+    },
+    {
+      key: 'uploadDate',
       header: 'Uploaded',
-      render: (item: AttachmentItem) => new Date(item.uploadedDate).toLocaleDateString(),
+      render: (item: AttachmentItem) => new Date(item.uploadDate).toLocaleDateString(),
     },
     {
       key: 'applicationFormId',
@@ -191,16 +205,20 @@ export function AttachmentsPage() {
           <FileUpload
             onChange={(file) => {
               setSelectedFileName(file?.name ?? 'No file selected')
+              setStoredFileName(file ? `${Date.now()}-${file.name}` : '')
+              setFileSize(file ? String(file.size) : '')
             }}
           />
-          <Input label="File Name" value={selectedFileName} onChange={(event) => setSelectedFileName(event.target.value)} required />
+          <Input label="Original Name" value={selectedFileName} onChange={(event) => setSelectedFileName(event.target.value)} required />
+          <Input label="Stored File Name" value={storedFileName} onChange={(event) => setStoredFileName(event.target.value)} required />
           <Input label="File Path" value={filePath} onChange={(event) => setFilePath(event.target.value)} required />
           <Input label="File Type" value={fileType} onChange={(event) => setFileType(event.target.value)} required />
+          <Input label="File Size (bytes)" value={fileSize} onChange={(event) => setFileSize(event.target.value)} required />
           <Input
-            label="Uploaded Date"
+            label="Upload Date"
             type="datetime-local"
-            value={uploadedDate}
-            onChange={(event) => setUploadedDate(event.target.value)}
+            value={uploadDate}
+            onChange={(event) => setUploadDate(event.target.value)}
             required
           />
           <Input
@@ -221,7 +239,7 @@ export function AttachmentsPage() {
       <ConfirmDialog
         open={openConfirm}
         title="Delete attachment"
-        description={`This action will remove ${selectedItem?.fileName ?? 'selected attachment'}.`}
+        description={`This action will remove ${selectedItem?.originalName ?? 'selected attachment'}.`}
         onClose={() => setOpenConfirm(false)}
         onConfirm={() => void confirmDelete()}
       />

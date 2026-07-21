@@ -2,10 +2,12 @@ import { api } from '../api'
 import type { AttachmentItem } from '../../types'
 
 export interface AttachmentPayload {
-  fileName: string
+  originalName: string
+  storedFileName: string
   filePath: string
   fileType: string
-  uploadedDate: string
+  fileSize: number
+  uploadDate: string
   applicationFormId: number
 }
 

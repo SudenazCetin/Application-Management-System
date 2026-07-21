@@ -72,8 +72,8 @@ export function ApplicationFormsPage() {
     setError(null)
 
     try {
-      const data = await getApplicationForms()
-      setItems(data)
+      const forms = await getApplicationForms()
+      setItems(forms)
     } catch (err) {
       setError(getErrorMessage(err, 'Application forms could not be loaded'))
     } finally {

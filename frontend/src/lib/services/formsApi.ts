@@ -1,6 +1,10 @@
 import { api } from '../api'
 import type { ApplicationFormItem } from '../../types'
 
+interface ApplicationFormsPageResponse {
+  content: ApplicationFormItem[]
+}
+
 export interface ApplicationFormPayload {
   title: string
   description: string
@@ -11,8 +15,15 @@ export interface ApplicationFormPayload {
 }
 
 export async function getApplicationForms() {
-  const { data } = await api.get<ApplicationFormItem[]>('/api/forms')
-  return data
+  const { data } = await api.get<ApplicationFormsPageResponse>('/api/forms', {
+    params: {
+      page: 0,
+      size: 1000,
+      sort: 'applicationDate,desc',
+    },
+  })
+
+  return data.content
 }
 
 export async function createApplicationForm(payload: ApplicationFormPayload) {
