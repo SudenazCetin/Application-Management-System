@@ -15,6 +15,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -50,6 +52,12 @@ public class ApplicationForm {
     // Başvuru tarihini ve saatini tutar.
     private LocalDateTime applicationDate;
 
+    // Kaydin olusturulma zamanini tutar.
+    private LocalDateTime createdDate;
+
+    // Kaydin son guncellenme zamanini tutar.
+    private LocalDateTime updatedDate;
+
     // Durum alanını enum olarak metin biçiminde saklar.
     @Enumerated(EnumType.STRING)
     private ApplicationStatus status;
@@ -73,4 +81,20 @@ public class ApplicationForm {
         orphanRemoval = true
     )
     private List<Attachment> attachments;
+
+    // Yeni kayit olusturulurken tarih alanlarini otomatik doldurur.
+    @PrePersist
+    public void onPrePersist() {
+        LocalDateTime now = LocalDateTime.now();
+        if (createdDate == null) {
+            createdDate = now;
+        }
+        updatedDate = now;
+    }
+
+    // Kayit guncellenirken sadece updatedDate alanini yeniler.
+    @PreUpdate
+    public void onPreUpdate() {
+        updatedDate = LocalDateTime.now();
+    }
 }

@@ -1,10 +1,14 @@
 package com.company.application.controller;
 
 import java.net.URI;
-import java.util.List;
+import java.time.LocalDateTime;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,9 +16,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.company.application.dto.ApplicationFormDto;
+import com.company.application.dto.response.ApplicationFormDetailResponse;
+import com.company.application.entity.enums.ApplicationStatus;
 import com.company.application.service.ApplicationFormService;
 
 import jakarta.validation.Valid;
@@ -32,21 +39,54 @@ public class ApplicationFormController {
     private final ApplicationFormService applicationFormService;
 
     // Tum basvuru formlarini listelemek icin GET /api/forms endpoint'i kullanilir.
+    // Bu endpoint filtreleme, arama, siralama ve sayfalama destekler.
     // Bu endpoint'e ADMIN ve PERSONNEL rolleri birlikte erisebilir.
     @PreAuthorize("hasAnyRole('ADMIN','PERSONNEL')")
     @GetMapping
-    public ResponseEntity<List<ApplicationFormDto>> getAllForms() {
-        // Veri servis katmanindan alinir.
-        List<ApplicationFormDto> forms = applicationFormService.findAll();
+    public ResponseEntity<Page<ApplicationFormDto>> getAllForms(
+        @RequestParam(required = false) ApplicationStatus status,
+        @RequestParam(required = false) Long formTypeId,
+        @RequestParam(required = false) Long applicantId,
+        @RequestParam(required = false) String keyword,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdDateStart,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdDateEnd,
+        Pageable pageable,
+        Authentication authentication
+    ) {
+        // Authentication uzerinden kullanicinin ADMIN olup olmadigi belirlenir.
+        boolean isAdmin = authentication.getAuthorities().stream()
+            .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
+
+        // Veri servis katmanindan filtrelenmis ve sayfalanmis olarak alinir.
+        Page<ApplicationFormDto> forms = applicationFormService.findAll(
+            status,
+            formTypeId,
+            applicantId,
+            keyword,
+            createdDateStart,
+            createdDateEnd,
+            pageable,
+            isAdmin
+        );
         // Basarili listeleme icin 200 OK donulur.
         return ResponseEntity.ok(forms);
     }
 
     // Tek bir basvuru formunu id ile getirmek icin GET /api/forms/{id} endpoint'i kullanilir.
+    // ADMIN tum kayitlari gorebilir, PERSONNEL sadece kendi kaydini gorebilir.
+    @PreAuthorize("hasAnyRole('ADMIN','PERSONNEL')")
     @GetMapping("/{id}")
-    public ResponseEntity<ApplicationFormDto> getFormById(@PathVariable Long id) {
-        // Path degiskenindeki id ile kayit aranir.
-        ApplicationFormDto form = applicationFormService.findById(id);
+    public ResponseEntity<ApplicationFormDetailResponse> getFormById(@PathVariable Long id,
+                                                                     Authentication authentication) {
+        // Authentication uzerinden kullanicinin ADMIN olup olmadigi belirlenir.
+        boolean isAdmin = authentication.getAuthorities().stream()
+            .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
+
+        // SecurityContext'teki principal bilgisi kullanicinin email degeridir.
+        String authenticatedEmail = authentication.getName();
+
+        // Path degiskenindeki id ile detay kayit aranir.
+        ApplicationFormDetailResponse form = applicationFormService.findDetailById(id, authenticatedEmail, isAdmin);
         // Kayit bulunduysa 200 OK ile dto donulur.
         return ResponseEntity.ok(form);
     }
