@@ -16,6 +16,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.http.HttpMethod;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -74,7 +75,11 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             // Auth endpoint'leri herkese acik, diger tum endpoint'ler kimlik dogrulama ister.
             .authorizeHttpRequests(auth -> auth
+                // Tarayicinin preflight OPTIONS istekleri security tarafindan bloklanmamalidir.
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
+                // Kullanicinin kendi profil endpoint'i giris yapmis tum kullanicilara aciktir.
+                .requestMatchers("/api/users/me").authenticated()
                 // User endpoint'lerine sadece ADMIN rolundeki kullanicilar erisebilir.
                 .requestMatchers("/api/users/**").hasRole("ADMIN")
                 // FormType endpoint'lerine sadece ADMIN rolundeki kullanicilar erisebilir.
@@ -101,7 +106,13 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://127.0.0.1:5173"));
+        // Vite frontend'in calistigi 5174 ve olasi alternatif localhost/127.0.0.1 origin'leri izinli olur.
+        configuration.setAllowedOrigins(List.of(
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
+            "http://localhost:5174",
+            "http://127.0.0.1:5174"
+        ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setExposedHeaders(List.of("Authorization"));

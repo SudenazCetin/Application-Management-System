@@ -2,7 +2,6 @@ package com.company.application.security;
 
 import java.io.IOException;
 
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -68,7 +67,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // Token kullaniciya ait ve suresi dolmamis ise context'e authentication yazilir.
             if (jwtService.isTokenValid(jwt, userDetails)) {
                 // Security context icin username-password token nesnesi olusturulur.
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                org.springframework.security.authentication.UsernamePasswordAuthenticationToken authToken = new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
                     userDetails,
                     null,
                     userDetails.getAuthorities()
