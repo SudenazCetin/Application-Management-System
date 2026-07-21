@@ -12,12 +12,12 @@ spring:
   datasource:
     # PostgreSQL JDBC surucusunu acikca belirtir.
     driver-class-name: org.postgresql.Driver
-    # Veritabaninin host, port ve db adini iceren baglanti adresidir.
-    url: jdbc:postgresql://localhost:5432/application_management_system
-    # Veritabanina baglanacak kullanici hesabidir.
-    username: postgres
-    # Veritabani kullanicisinin sifresidir.
-    password: postgres123
+    # Veritabaninin host, port ve db adini iceren baglanti adresidir. .env dosyasindan okunur.
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/application_management_system}
+    # Veritabanina baglanacak kullanici hesabidir. .env dosyasindan okunur.
+    username: ${DB_USERNAME}
+    # Veritabani kullanicisinin sifresidir. .env dosyasindan okunur, repoya asla commitlenmemelidir.
+    password: ${DB_PASSWORD}
 
   # JPA'nin SQL uretimi ve veritabani etkileimini yoneten temel ayarlar.
   jpa:

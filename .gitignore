@@ -8,6 +8,10 @@
 # Runtime uploads
 /uploads/
 
+# Secrets (real values live only in the local .env file, never commit it)
+/.env
+/frontend/.env
+
 # IDE / tooling
 /.idea/
 /.vscode/
