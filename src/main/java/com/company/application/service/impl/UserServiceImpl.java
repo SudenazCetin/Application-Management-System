@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.company.application.dto.UserDto;
+import com.company.application.dto.request.UserProfileUpdateRequest;
 import com.company.application.entity.User;
 import com.company.application.mapper.UserMapper;
 import com.company.application.repository.UserRepository;
@@ -48,6 +49,34 @@ public class UserServiceImpl implements UserService {
         user.setSurname(dto.getSurname());
         user.setEmail(dto.getEmail());
         user.setRole(dto.getRole());
+
+        User updatedUser = userRepository.save(user);
+        return userMapper.toDto(updatedUser);
+    }
+
+    // Token'dan gelen email bilgisiyle giris yapan kullanicinin profilini getirir.
+    @Override
+    public UserDto getMyProfile(String authenticatedEmail) {
+        User user = userRepository.findByEmail(authenticatedEmail)
+            .orElseThrow(() -> new RuntimeException("User not found with email: " + authenticatedEmail));
+        return userMapper.toDto(user);
+    }
+
+    // Giris yapan kullanicinin kendi profilini izin verilen alanlar ile gunceller.
+    @Override
+    public UserDto updateMyProfile(String authenticatedEmail, UserProfileUpdateRequest request) {
+        User user = userRepository.findByEmail(authenticatedEmail)
+            .orElseThrow(() -> new RuntimeException("User not found with email: " + authenticatedEmail));
+
+        // Email degisiyorsa yeni email baska bir kullanici tarafindan kullaniliyor mu kontrol edilir.
+        if (!user.getEmail().equalsIgnoreCase(request.getEmail()) && userRepository.existsByEmail(request.getEmail())) {
+            throw new IllegalArgumentException("Email is already in use");
+        }
+
+        // Self-service guncellemede sadece profil alanlari degistirilir.
+        user.setName(request.getName());
+        user.setSurname(request.getSurname());
+        user.setEmail(request.getEmail());
 
         User updatedUser = userRepository.save(user);
         return userMapper.toDto(updatedUser);

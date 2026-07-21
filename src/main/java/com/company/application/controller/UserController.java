@@ -4,6 +4,7 @@ import java.net.URI;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.company.application.dto.UserDto;
+import com.company.application.dto.request.UserProfileUpdateRequest;
 import com.company.application.service.UserService;
 
 import jakarta.validation.Valid;
@@ -40,6 +42,33 @@ public class UserController {
         List<UserDto> users = userService.findAll();
         // Basarili listeleme icin 200 OK donulur.
         return ResponseEntity.ok(users);
+    }
+
+    // Giris yapan kullanicinin kendi profilini getirmek icin GET /api/users/me endpoint'i kullanilir.
+    // Bu endpoint'e giris yapmis tum kullanicilar erisebilir.
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/me")
+    public ResponseEntity<UserDto> getMyProfile(Authentication authentication) {
+        // SecurityContext'teki authenticated principal'dan email bilgisi alinir.
+        String authenticatedEmail = authentication.getName();
+        // Is kurali service katmaninda calisir; controller sadece yonlendirir.
+        UserDto user = userService.getMyProfile(authenticatedEmail);
+        // Basarili getirme icin 200 OK ile dto donulur.
+        return ResponseEntity.ok(user);
+    }
+
+    // Giris yapan kullanicinin kendi profilini guncellemek icin PUT /api/users/me endpoint'i kullanilir.
+    // Bu endpoint'e giris yapmis tum kullanicilar erisebilir.
+    @PreAuthorize("isAuthenticated()")
+    @PutMapping("/me")
+    public ResponseEntity<UserDto> updateMyProfile(Authentication authentication,
+                                                   @Valid @RequestBody UserProfileUpdateRequest request) {
+        // SecurityContext'teki authenticated principal'dan email bilgisi alinir.
+        String authenticatedEmail = authentication.getName();
+        // Is kurali service katmaninda calisir; controller sadece yonlendirir.
+        UserDto updatedUser = userService.updateMyProfile(authenticatedEmail, request);
+        // Basarili guncelleme icin 200 OK ile guncel dto donulur.
+        return ResponseEntity.ok(updatedUser);
     }
 
     // Tek bir kullaniciyi id ile getirmek icin GET /api/users/{id} endpoint'i kullanilir.
